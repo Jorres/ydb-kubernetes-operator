@@ -202,13 +202,17 @@ func podIsReady(conditions []corev1.PodCondition) bool {
 }
 
 func BringYdbCliToPod(podName, podNamespace string) {
+	expectedCliLocation := fmt.Sprintf("%v/ydb/bin/ydb", os.ExpandEnv("$HOME"))
+
+	_, err := os.Stat(expectedCliLocation)
+	Expect(err).NotTo(HaveOccurred(), fmt.Sprintf("Expected YDB CLI at path %s to exist", expectedCliLocation))
+
 	Eventually(func(g Gomega) error {
 		args := []string{
 			"-n",
 			podNamespace,
 			"cp",
-			// This implicitly relies on 'ydb' cli binary installed in your system
-			fmt.Sprintf("%v/ydb/bin/ydb", os.ExpandEnv("$HOME")),
+			expectedCliLocation,
 			fmt.Sprintf("%v:/tmp/ydb", podName),
 		}
 		cmd := exec.Command("kubectl", args...)
