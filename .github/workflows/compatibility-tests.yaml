@@ -9,7 +9,6 @@ on:
 jobs:
   test-compatibility:
     runs-on: ubuntu-latest
-    env:
     steps:
       - name: Maximize build space
         uses: AdityaGarg8/remove-unwanted-software@v4.1
