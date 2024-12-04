@@ -44,7 +44,7 @@ help: ## Display this help.
 ##@ Development
 
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
-	$(CONTROLLER_GEN) crd rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 	cp config/crd/bases/ydb.tech_storages.yaml deploy/ydb-operator/crds/storage.yaml
 	cp config/crd/bases/ydb.tech_databases.yaml deploy/ydb-operator/crds/database.yaml
 	cp config/crd/bases/ydb.tech_storagenodesets.yaml deploy/ydb-operator/crds/storagenodeset.yaml
@@ -65,7 +65,7 @@ vet: ## Run go vet against code.
 
 kind-init:
 	if kind get clusters | grep "kind-ydb-operator"; then exit 0; fi; \
-	kind create cluster --config e2e/kind-cluster-config.yaml --name kind-ydb-operator; \
+	kind create cluster --config tests/cfg/kind-cluster-config.yaml --name kind-ydb-operator; \
 	docker pull k8s.gcr.io/ingress-nginx/kube-webhook-certgen:v1.0; \
 	kind load docker-image k8s.gcr.io/ingress-nginx/kube-webhook-certgen:v1.0 --name kind-ydb-operator; \
 	docker pull cr.yandex/crptqonuodf51kdj7a7d/ydb:24.2.7; \
@@ -83,7 +83,7 @@ unit-test: manifests generate fmt vet envtest ## Run unit tests
 
 .PHONY: e2e-test
 e2e-test: manifests generate fmt vet docker-build kind-init kind-load ## Run e2e tests
-	go test -v -timeout 3600s -p 1 ./e2e/... -ginkgo.v $(opts)
+	go test -v -timeout 3600s -p 1 ./tests/e2e/... -ginkgo.v $(opts)
 
 .PHONY: test
 test: unit-test e2e-test ## Run all tests

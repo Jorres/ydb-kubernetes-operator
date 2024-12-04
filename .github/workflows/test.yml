@@ -1,0 +1,31 @@
+name: test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  tag-and-release:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: parse-version-from-chart
+      run: |
+        VERSION=$(cat ./deploy/ydb-operator/Chart.yaml | sed -n 's/^version: //p' | tr -d '\"')
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+    - name: install-dependencies
+      run: |
+        HELM_PKG="helm-v3.10.3-linux-amd64.tar.gz"
+        curl -LO https://get.helm.sh/"${HELM_PKG}"
+        tar -zxvf "${HELM_PKG}"
+        mv ./linux-amd64/helm .
+        echo "$(pwd)" >> $GITHUB_PATH
+
+    - name: package-and-push-helm-chart
+      run: |
+        make manifests
+
+        helm package ./deploy/ydb-operator
+
+        ls -lah
