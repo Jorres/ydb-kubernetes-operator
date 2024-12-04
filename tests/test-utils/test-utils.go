@@ -65,11 +65,19 @@ func InstallOperatorWithHelm(namespace, version string) {
 		"--version", version,
 	}
 
-	Expect(exec.Command("helm", "repo", "add", "ydb", "https://charts.ydb.tech/").Run()).Should(Succeed())
-	Expect(exec.Command("helm", "repo", "update").Run()).Should(Succeed())
+	out, err := exec.Command("helm", "repo", "add", "ydb", "https://charts.ydb.tech/").CombinedOutput()
+	fmt.Println(string(out))
+	fmt.Println(err.Error())
+	out, err = exec.Command("helm", "repo", "update").CombinedOutput()
+	fmt.Println(string(out))
+	fmt.Println(err.Error())
+	out, err = exec.Command("helm", "repo", "list").CombinedOutput()
+	fmt.Println(string(out))
+	fmt.Println(err.Error())
 
-	result := exec.Command("helm", args...)
-	output, err := result.CombinedOutput()
+	installCommand := exec.Command("helm", args...)
+	fmt.Println(args)
+	output, err := installCommand.CombinedOutput()
 	fmt.Println(string(output))
 	Expect(err).To(BeNil())
 	Expect(string(output)).To(ContainSubstring("deployed"))
