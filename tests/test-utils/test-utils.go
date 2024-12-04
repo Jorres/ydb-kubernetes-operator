@@ -205,19 +205,21 @@ func BringYdbCliToPod(podName, podNamespace string) {
 func ExecuteSimpleTableE2ETest(podName, podNamespace, storageEndpoint string, databasePath string) {
 	tablePath := "testfolder/testtable"
 
-	args := []string{
-		"-n", podNamespace,
-		"exec", podName,
-		"--",
-		"/tmp/ydb",
-		"-d", databasePath,
-		"-e", storageEndpoint,
-		"yql",
-		"-s",
-		fmt.Sprintf("CREATE TABLE `%s` (testColumnA Utf8, testColumnB Utf8, PRIMARY KEY (testColumnA));", tablePath),
-	}
-	output, err := exec.Command("kubectl", args...).CombinedOutput()
-	Expect(err).ShouldNot(HaveOccurred(), string(output))
+	Eventually(func(g Gomega) {
+		args := []string{
+			"-n", podNamespace,
+			"exec", podName,
+			"--",
+			"/tmp/ydb",
+			"-d", databasePath,
+			"-e", storageEndpoint,
+			"yql",
+			"-s",
+			fmt.Sprintf("CREATE TABLE `%s` (testColumnA Utf8, testColumnB Utf8, PRIMARY KEY (testColumnA));", tablePath),
+		}
+		output, _ := exec.Command("kubectl", args...).CombinedOutput()
+		fmt.Println(string(output))
+	}, Timeout, Interval).Should(Succeed())
 
 	argsInsert := []string{
 		"-n", podNamespace,
@@ -230,7 +232,7 @@ func ExecuteSimpleTableE2ETest(podName, podNamespace, storageEndpoint string, da
 		"-s",
 		fmt.Sprintf("INSERT INTO `%s` (testColumnA, testColumnB) VALUES ('valueA', 'valueB');", tablePath),
 	}
-	output, err = exec.Command("kubectl", argsInsert...).CombinedOutput()
+	output, err := exec.Command("kubectl", argsInsert...).CombinedOutput()
 	Expect(err).ShouldNot(HaveOccurred(), string(output))
 
 	argsSelect := []string{
