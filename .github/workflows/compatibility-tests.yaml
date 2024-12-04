@@ -69,19 +69,19 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential
 
-          # Install kubectl
           curl -LO https://dl.k8s.io/release/v1.25.3/bin/linux/amd64/kubectl
           chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin
 
-          # Install Helm
           HELM_VERSION="v3.10.3"
           curl -sSL https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz | tar -zxvf - --strip-components=1 linux-amd64/helm
           chmod +x ./helm && sudo mv ./helm /usr/local/bin
 
-          # Install kind
           go install sigs.k8s.io/kind@v0.17.0
 
-          # Update PATH
+          curl -sSL https://storage.yandexcloud.net/yandexcloud-ydb/install.sh | bash
+
+          echo "$(pwd)" >> $GITHUB_PATH
+          echo "$HOME/ydb/bin" >> $GITHUB_PATH
           echo "$HOME/go/bin" >> $GITHUB_PATH
 
       - name: Check dependencies
@@ -91,6 +91,7 @@ jobs:
           kind version
           kubectl version --client=true
           helm version
+          ydb version
 
       - name: Setup k8s cluster
         run: |
