@@ -36,7 +36,10 @@ const (
 	YdbOperatorReleaseName     = "ydb-operator"
 )
 
-var pathToValuesFile = filepath.Join("..", "cfg", "operator-values.yaml")
+var (
+	pathToHelmValuesInLocalInstall  = filepath.Join("..", "cfg", "operator-local-values.yaml")
+	pathToHelmValuesInRemoteInstall = filepath.Join("..", "cfg", "operator-values.yaml")
+)
 
 func InstallLocalOperatorWithHelm(namespace string) {
 	args := []string{
@@ -45,7 +48,7 @@ func InstallLocalOperatorWithHelm(namespace string) {
 		"--wait",
 		"ydb-operator",
 		filepath.Join("..", "..", "deploy", "ydb-operator"),
-		"-f", pathToValuesFile,
+		"-f", pathToHelmValuesInLocalInstall,
 	}
 
 	result := exec.Command("helm", args...)
@@ -61,7 +64,7 @@ func InstallOperatorWithHelm(namespace, version string) {
 		"--wait",
 		"ydb-operator",
 		YdbOperatorRemoteChart,
-		"-f", pathToValuesFile,
+		"-f", pathToHelmValuesInRemoteInstall,
 		"--version", version,
 	}
 
@@ -113,7 +116,7 @@ func UpgradeOperatorWithHelm(namespace, version string) {
 		"ydb-operator",
 		YdbOperatorRemoteChart,
 		"--version", version,
-		"-f", pathToValuesFile,
+		"-f", pathToHelmValuesInLocalInstall,
 	}
 
 	cmd := exec.Command("helm", args...)
